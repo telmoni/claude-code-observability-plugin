@@ -1,0 +1,47 @@
+{
+  "name": "telmoni-observability",
+  "displayName": "Telmoni Observability",
+  "version": "0.0.0",
+  "description": "Records each turn of your Claude Code sessions in Telmoni as a run: the models and their tokens, the tools, the subagents and the times, and the tags you set. The conversation itself, your prompts and images, the replies and their plain-text thinking, each tool's input and output, only once you turn on Capture content and the project keeps content.",
+  "author": {
+    "name": "Telmoni",
+    "email": "hello@telmoni.com",
+    "url": "https://telmoni.com"
+  },
+  "homepage": "https://telmoni.com/docs/api/coding-agents",
+  "repository": "https://github.com/telmoni/claude-code-observability-plugin",
+  "license": "Apache-2.0",
+  "keywords": ["observability", "monitoring", "telemetry", "tracing"],
+  "userConfig": {
+    "TELMONI_API_KEY": {
+      "type": "string",
+      "title": "Telmoni API key",
+      "description": "A project API key with the ingest scope (tm_…), from the project's API keys page.",
+      "sensitive": true
+    },
+    "TELMONI_ENDPOINT": {
+      "type": "string",
+      "title": "Telmoni endpoint",
+      "description": "Leave empty for https://api.telmoni.com. A self-hosted Telmoni gives its machine host.",
+      "default": ""
+    },
+    "TELMONI_CAPTURE_CONTENT": {
+      "type": "boolean",
+      "title": "Capture content",
+      "description": "Send each turn's conversation too: your prompts and their images, the replies and their plain-text thinking, each tool's input and output, each subagent's task and answer, each compaction's summary. Kept only where the project's content mode is on. A TELMONI_API_KEY in the environment takes TELMONI_CAPTURE_CONTENT=1 there instead.",
+      "default": false
+    },
+    "TELMONI_SCRUB_SECRETS": {
+      "type": "boolean",
+      "title": "Scrub secrets",
+      "description": "Before content leaves, replace each secret in it (a key, a token, a password, a private key, a connection string) with a marker such as [secret: aws_key], counted on the run's page. A TELMONI_API_KEY in the environment takes TELMONI_SCRUB_SECRETS=0 there instead.",
+      "default": true
+    },
+    "TELMONI_SCRUB_PII": {
+      "type": "boolean",
+      "title": "Scrub personal data",
+      "description": "Before content leaves, replace personal data in it (emails, phone numbers, card numbers, IP addresses, home folders' paths) with a marker such as [pii: email], counted on the run's page; no pattern finds a name or a street address. A TELMONI_API_KEY in the environment takes TELMONI_SCRUB_PII=0 there instead.",
+      "default": true
+    }
+  }
+}
