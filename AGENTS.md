@@ -29,7 +29,7 @@ The Claude Code plugin for Telmoni: a hook that records each turn of a person's 
 ## Commands
 - **After every change** (no permission needed; report failures verbatim): `npm run verify && npm run validate` — prettier's check, tsc, the bundles rebuilt and the suite, then `claude plugin validate --strict` on the plugin and the marketplace.
 - `npm run format` formats; `npm run format:check`, `npm run typecheck`, `npm run build`, `npm test` and `npm run validate` run prettier's check, tsc, the bundles, the suite or the manifests' check alone. The suite runs the SDK against a fake Telmoni and needs no network once `npm ci` has run.
-- **Until the SDK's next release** (a model call's and a run's messages, steps inside steps, the scrubbers), the lock's 0.2.0 builds no record: after each `npm ci`, run `npm run sdk-checkout`, which installs `../telmoni/sdk/typescript`, packed to `/tmp/telmoni`, over the registry's, unsaved; then the gate.
+- **Until the SDK's next release** (a model call's and a run's messages, steps inside steps, the scrubbers), the SDK is a development dependency on the core's checkout beside this one (`file:../telmoni/sdk/typescript`), built there first (`npm ci && npm run build` in `../telmoni/sdk/typescript`); CI checks out the core at `TELMONI_REF` in `ci.yml`, the commit whose SDK the committed `dist/` bundles, bumped with it.
 - **Only when asked:** a run against a live Telmoni, `uv lock --upgrade`, a version bump.
 
 ## Code Rules

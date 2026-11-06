@@ -15,15 +15,12 @@
     "validate": "claude plugin validate --strict . && claude plugin validate --strict .claude-plugin/marketplace.json",
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
-    "verify": "npm run format:check && npm run typecheck && npm run build && npm test",
-    "sdk-checkout": "mkdir -p /tmp/telmoni && npm install --no-save --no-audit --no-fund \"/tmp/telmoni/$(npm pack --silent --pack-destination /tmp/telmoni ../telmoni/sdk/typescript)\""
-  },
-  "dependencies": {
-    "telmoni": ">=0.2.0 <1"
+    "verify": "npm run format:check && npm run typecheck && npm run build && npm test"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
     "prettier": "^3.9.10",
+    "telmoni": "file:../telmoni/sdk/typescript",
     "tsup": "^9.0.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"

@@ -8,16 +8,16 @@ var __esm = (fn, res, err) => function __init() {
   }
 };
 
-// node_modules/@opentelemetry/api/build/esm/version.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/version.js
 var VERSION;
 var init_version = __esm({
-  "node_modules/@opentelemetry/api/build/esm/version.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/version.js"() {
     "use strict";
     VERSION = "1.9.1";
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/internal/semver.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/internal/semver.js
 function _makeCompatibilityCheck(ownVersion) {
   const acceptedVersions = /* @__PURE__ */ new Set([ownVersion]);
   const rejectedVersions = /* @__PURE__ */ new Set();
@@ -81,7 +81,7 @@ function _makeCompatibilityCheck(ownVersion) {
 }
 var re, isCompatible;
 var init_semver = __esm({
-  "node_modules/@opentelemetry/api/build/esm/internal/semver.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/internal/semver.js"() {
     "use strict";
     init_version();
     re = /^(\d+)\.(\d+)\.(\d+)(-(.+))?$/;
@@ -89,7 +89,7 @@ var init_semver = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/internal/global-utils.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/internal/global-utils.js
 function registerGlobal(type, instance, diag2, allowOverride = false) {
   var _a;
   const api = _global[GLOBAL_OPENTELEMETRY_API_KEY] = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a !== void 0 ? _a : {
@@ -126,7 +126,7 @@ function unregisterGlobal(type, diag2) {
 }
 var major, GLOBAL_OPENTELEMETRY_API_KEY, _global;
 var init_global_utils = __esm({
-  "node_modules/@opentelemetry/api/build/esm/internal/global-utils.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/internal/global-utils.js"() {
     "use strict";
     init_version();
     init_semver();
@@ -136,7 +136,7 @@ var init_global_utils = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/diag/ComponentLogger.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/ComponentLogger.js
 function logProxy(funcName, namespace, args) {
   const logger = getGlobal("diag");
   if (!logger) {
@@ -146,7 +146,7 @@ function logProxy(funcName, namespace, args) {
 }
 var DiagComponentLogger;
 var init_ComponentLogger = __esm({
-  "node_modules/@opentelemetry/api/build/esm/diag/ComponentLogger.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/ComponentLogger.js"() {
     "use strict";
     init_global_utils();
     DiagComponentLogger = class {
@@ -172,10 +172,10 @@ var init_ComponentLogger = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/diag/types.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/types.js
 var DiagLogLevel;
 var init_types = __esm({
-  "node_modules/@opentelemetry/api/build/esm/diag/types.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/types.js"() {
     "use strict";
     (function(DiagLogLevel2) {
       DiagLogLevel2[DiagLogLevel2["NONE"] = 0] = "NONE";
@@ -189,7 +189,7 @@ var init_types = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/diag/internal/logLevelLogger.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/internal/logLevelLogger.js
 function createLogLevelDiagLogger(maxLevel, logger) {
   if (maxLevel < DiagLogLevel.NONE) {
     maxLevel = DiagLogLevel.NONE;
@@ -214,16 +214,16 @@ function createLogLevelDiagLogger(maxLevel, logger) {
   };
 }
 var init_logLevelLogger = __esm({
-  "node_modules/@opentelemetry/api/build/esm/diag/internal/logLevelLogger.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag/internal/logLevelLogger.js"() {
     "use strict";
     init_types();
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/api/diag.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/diag.js
 var API_NAME, DiagAPI;
 var init_diag = __esm({
-  "node_modules/@opentelemetry/api/build/esm/api/diag.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/diag.js"() {
     "use strict";
     init_ComponentLogger();
     init_logLevelLogger();
@@ -290,13 +290,13 @@ var init_diag = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/context/context.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context/context.js
 function createContextKey(description) {
   return Symbol.for(description);
 }
 var BaseContext, ROOT_CONTEXT;
 var init_context = __esm({
-  "node_modules/@opentelemetry/api/build/esm/context/context.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context/context.js"() {
     "use strict";
     BaseContext = class _BaseContext {
       /**
@@ -324,13 +324,13 @@ var init_context = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/metrics/NoopMeter.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/metrics/NoopMeter.js
 function createNoopMeter() {
   return NOOP_METER;
 }
 var NoopMeter, NoopMetric, NoopCounterMetric, NoopUpDownCounterMetric, NoopGaugeMetric, NoopHistogramMetric, NoopObservableMetric, NoopObservableCounterMetric, NoopObservableGaugeMetric, NoopObservableUpDownCounterMetric, NOOP_METER, NOOP_COUNTER_METRIC, NOOP_GAUGE_METRIC, NOOP_HISTOGRAM_METRIC, NOOP_UP_DOWN_COUNTER_METRIC, NOOP_OBSERVABLE_COUNTER_METRIC, NOOP_OBSERVABLE_GAUGE_METRIC, NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC;
 var init_NoopMeter = __esm({
-  "node_modules/@opentelemetry/api/build/esm/metrics/NoopMeter.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/metrics/NoopMeter.js"() {
     "use strict";
     NoopMeter = class {
       constructor() {
@@ -429,10 +429,10 @@ var init_NoopMeter = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/context/NoopContextManager.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context/NoopContextManager.js
 var NoopContextManager;
 var init_NoopContextManager = __esm({
-  "node_modules/@opentelemetry/api/build/esm/context/NoopContextManager.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context/NoopContextManager.js"() {
     "use strict";
     init_context();
     NoopContextManager = class {
@@ -455,10 +455,10 @@ var init_NoopContextManager = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/api/context.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/context.js
 var API_NAME2, NOOP_CONTEXT_MANAGER, ContextAPI;
 var init_context2 = __esm({
-  "node_modules/@opentelemetry/api/build/esm/api/context.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/context.js"() {
     "use strict";
     init_NoopContextManager();
     init_global_utils();
@@ -522,10 +522,10 @@ var init_context2 = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/trace_flags.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/trace_flags.js
 var TraceFlags;
 var init_trace_flags = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/trace_flags.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/trace_flags.js"() {
     "use strict";
     (function(TraceFlags2) {
       TraceFlags2[TraceFlags2["NONE"] = 0] = "NONE";
@@ -534,10 +534,10 @@ var init_trace_flags = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/invalid-span-constants.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/invalid-span-constants.js
 var INVALID_SPANID, INVALID_TRACEID, INVALID_SPAN_CONTEXT;
 var init_invalid_span_constants = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/invalid-span-constants.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/invalid-span-constants.js"() {
     "use strict";
     init_trace_flags();
     INVALID_SPANID = "0000000000000000";
@@ -550,10 +550,10 @@ var init_invalid_span_constants = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/NonRecordingSpan.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NonRecordingSpan.js
 var NonRecordingSpan;
 var init_NonRecordingSpan = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/NonRecordingSpan.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NonRecordingSpan.js"() {
     "use strict";
     init_invalid_span_constants();
     NonRecordingSpan = class {
@@ -604,7 +604,7 @@ var init_NonRecordingSpan = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/context-utils.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/context-utils.js
 function getSpan(context2) {
   return context2.getValue(SPAN_KEY) || void 0;
 }
@@ -626,7 +626,7 @@ function getSpanContext(context2) {
 }
 var SPAN_KEY;
 var init_context_utils = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/context-utils.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/context-utils.js"() {
     "use strict";
     init_context();
     init_NonRecordingSpan();
@@ -635,7 +635,7 @@ var init_context_utils = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/spancontext-utils.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/spancontext-utils.js
 function isValidHex(id, length) {
   if (typeof id !== "string" || id.length !== length)
     return false;
@@ -659,7 +659,7 @@ function wrapSpanContext(spanContext) {
 }
 var isHex;
 var init_spancontext_utils = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/spancontext-utils.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/spancontext-utils.js"() {
     "use strict";
     init_invalid_span_constants();
     init_NonRecordingSpan();
@@ -771,13 +771,13 @@ var init_spancontext_utils = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/NoopTracer.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NoopTracer.js
 function isSpanContext(spanContext) {
   return spanContext !== null && typeof spanContext === "object" && "spanId" in spanContext && typeof spanContext["spanId"] === "string" && "traceId" in spanContext && typeof spanContext["traceId"] === "string" && "traceFlags" in spanContext && typeof spanContext["traceFlags"] === "number";
 }
 var contextApi, NoopTracer;
 var init_NoopTracer = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/NoopTracer.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NoopTracer.js"() {
     "use strict";
     init_context2();
     init_context_utils();
@@ -823,10 +823,10 @@ var init_NoopTracer = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/ProxyTracer.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/ProxyTracer.js
 var NOOP_TRACER, ProxyTracer;
 var init_ProxyTracer = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/ProxyTracer.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/ProxyTracer.js"() {
     "use strict";
     init_NoopTracer();
     NOOP_TRACER = new NoopTracer();
@@ -863,10 +863,10 @@ var init_ProxyTracer = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/NoopTracerProvider.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NoopTracerProvider.js
 var NoopTracerProvider;
 var init_NoopTracerProvider = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/NoopTracerProvider.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/NoopTracerProvider.js"() {
     "use strict";
     init_NoopTracer();
     NoopTracerProvider = class {
@@ -877,10 +877,10 @@ var init_NoopTracerProvider = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/ProxyTracerProvider.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/ProxyTracerProvider.js
 var NOOP_TRACER_PROVIDER, ProxyTracerProvider;
 var init_ProxyTracerProvider = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/ProxyTracerProvider.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/ProxyTracerProvider.js"() {
     "use strict";
     init_ProxyTracer();
     init_NoopTracerProvider();
@@ -911,10 +911,10 @@ var init_ProxyTracerProvider = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/SamplingResult.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/SamplingResult.js
 var SamplingDecision;
 var init_SamplingResult = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/SamplingResult.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/SamplingResult.js"() {
     "use strict";
     (function(SamplingDecision3) {
       SamplingDecision3[SamplingDecision3["NOT_RECORD"] = 0] = "NOT_RECORD";
@@ -924,10 +924,10 @@ var init_SamplingResult = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/span_kind.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/span_kind.js
 var SpanKind;
 var init_span_kind = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/span_kind.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/span_kind.js"() {
     "use strict";
     (function(SpanKind2) {
       SpanKind2[SpanKind2["INTERNAL"] = 0] = "INTERNAL";
@@ -939,10 +939,10 @@ var init_span_kind = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace/status.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/status.js
 var SpanStatusCode;
 var init_status = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace/status.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace/status.js"() {
     "use strict";
     (function(SpanStatusCode2) {
       SpanStatusCode2[SpanStatusCode2["UNSET"] = 0] = "UNSET";
@@ -952,30 +952,30 @@ var init_status = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/context-api.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context-api.js
 var context;
 var init_context_api = __esm({
-  "node_modules/@opentelemetry/api/build/esm/context-api.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/context-api.js"() {
     "use strict";
     init_context2();
     context = ContextAPI.getInstance();
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/diag-api.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag-api.js
 var diag;
 var init_diag_api = __esm({
-  "node_modules/@opentelemetry/api/build/esm/diag-api.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/diag-api.js"() {
     "use strict";
     init_diag();
     diag = DiagAPI.instance();
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/api/trace.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/trace.js
 var API_NAME3, TraceAPI;
 var init_trace = __esm({
-  "node_modules/@opentelemetry/api/build/esm/api/trace.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/api/trace.js"() {
     "use strict";
     init_global_utils();
     init_ProxyTracerProvider();
@@ -1036,19 +1036,19 @@ var init_trace = __esm({
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/trace-api.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace-api.js
 var trace;
 var init_trace_api = __esm({
-  "node_modules/@opentelemetry/api/build/esm/trace-api.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/trace-api.js"() {
     "use strict";
     init_trace();
     trace = TraceAPI.getInstance();
   }
 });
 
-// node_modules/@opentelemetry/api/build/esm/index.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/index.js
 var init_esm = __esm({
-  "node_modules/@opentelemetry/api/build/esm/index.js"() {
+  "../telmoni/sdk/typescript/node_modules/@opentelemetry/api/build/esm/index.js"() {
     "use strict";
     init_context();
     init_NoopMeter();
@@ -2115,21 +2115,21 @@ function iso(when2) {
   return when2.toISOString();
 }
 
-// node_modules/telmoni/dist/index.mjs
+// ../telmoni/sdk/typescript/dist/index.mjs
 init_esm();
 import { BlockList, isIPv4, isIPv6 } from "net";
 
-// node_modules/@opentelemetry/resources/build/esm/ResourceImpl.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/resources/build/esm/ResourceImpl.js
 init_esm();
 
-// node_modules/@opentelemetry/core/build/esm/trace/suppress-tracing.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/trace/suppress-tracing.js
 init_esm();
 var SUPPRESS_TRACING_KEY = createContextKey("OpenTelemetry SDK Context Key SUPPRESS_TRACING");
 function isTracingSuppressed(context2) {
   return context2.getValue(SUPPRESS_TRACING_KEY) === true;
 }
 
-// node_modules/@opentelemetry/core/build/esm/common/attributes.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/common/attributes.js
 init_esm();
 function sanitizeAttributes(attributes) {
   const out = {};
@@ -2199,7 +2199,7 @@ function isValidPrimitiveAttributeValueType(valType) {
   return false;
 }
 
-// node_modules/@opentelemetry/core/build/esm/common/logging-error-handler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/common/logging-error-handler.js
 init_esm();
 function loggingErrorHandler() {
   return (ex) => {
@@ -2230,7 +2230,7 @@ function flattenException(ex) {
   return result;
 }
 
-// node_modules/@opentelemetry/core/build/esm/common/global-error-handler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/common/global-error-handler.js
 var delegateHandler = loggingErrorHandler();
 function globalErrorHandler(ex) {
   try {
@@ -2239,7 +2239,7 @@ function globalErrorHandler(ex) {
   }
 }
 
-// node_modules/@opentelemetry/core/build/esm/platform/node/environment.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/platform/node/environment.js
 init_esm();
 import { inspect } from "util";
 function getNumberFromEnv(key) {
@@ -2262,10 +2262,10 @@ function getStringFromEnv(key) {
   return raw2;
 }
 
-// node_modules/@opentelemetry/core/build/esm/version.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/version.js
 var VERSION2 = "2.12.0";
 
-// node_modules/@opentelemetry/semantic-conventions/dist/stable_attributes.mjs
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/semantic-conventions/build/esm/stable_attributes.js
 var ATTR_EXCEPTION_MESSAGE = "exception.message";
 var ATTR_EXCEPTION_STACKTRACE = "exception.stacktrace";
 var ATTR_EXCEPTION_TYPE = "exception.type";
@@ -2275,10 +2275,10 @@ var TELEMETRY_SDK_LANGUAGE_VALUE_NODEJS = "nodejs";
 var ATTR_TELEMETRY_SDK_NAME = "telemetry.sdk.name";
 var ATTR_TELEMETRY_SDK_VERSION = "telemetry.sdk.version";
 
-// node_modules/@opentelemetry/core/build/esm/semconv.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/semconv.js
 var ATTR_PROCESS_RUNTIME_NAME = "process.runtime.name";
 
-// node_modules/@opentelemetry/core/build/esm/platform/node/sdk-info.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/platform/node/sdk-info.js
 var SDK_INFO = {
   [ATTR_TELEMETRY_SDK_NAME]: "opentelemetry",
   [ATTR_PROCESS_RUNTIME_NAME]: "node",
@@ -2286,10 +2286,10 @@ var SDK_INFO = {
   [ATTR_TELEMETRY_SDK_VERSION]: VERSION2
 };
 
-// node_modules/@opentelemetry/core/build/esm/platform/node/index.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/platform/node/index.js
 var otperformance = performance;
 
-// node_modules/@opentelemetry/core/build/esm/common/time.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/common/time.js
 var NANOSECOND_DIGITS = 9;
 var NANOSECOND_DIGITS_IN_MILLIS = 6;
 var MILLISECONDS_TO_NANOSECONDS = Math.pow(10, NANOSECOND_DIGITS_IN_MILLIS);
@@ -2329,7 +2329,7 @@ function addHrTimes(time1, time2) {
   return out;
 }
 
-// node_modules/@opentelemetry/core/build/esm/utils/lodash.merge.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/utils/lodash.merge.js
 var objectTag = "[object Object]";
 var nullTag = "[object Null]";
 var undefinedTag = "[object Undefined]";
@@ -2383,7 +2383,7 @@ function objectToString(value) {
   return nativeObjectToString.call(value);
 }
 
-// node_modules/@opentelemetry/core/build/esm/utils/merge.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/core/build/esm/utils/merge.js
 var MAX_LEVEL = 20;
 function merge(...args) {
   let result = args.shift();
@@ -2495,7 +2495,7 @@ function shouldMerge(one, two) {
   return true;
 }
 
-// node_modules/@opentelemetry/resources/build/esm/default-service-name.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/resources/build/esm/default-service-name.js
 var serviceName;
 function defaultServiceName() {
   if (serviceName === void 0) {
@@ -2509,12 +2509,12 @@ function defaultServiceName() {
   return serviceName;
 }
 
-// node_modules/@opentelemetry/resources/build/esm/utils.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/resources/build/esm/utils.js
 var isPromiseLike = (val) => {
   return val !== null && typeof val === "object" && typeof val.then === "function";
 };
 
-// node_modules/@opentelemetry/resources/build/esm/ResourceImpl.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/resources/build/esm/ResourceImpl.js
 var ResourceImpl = class _ResourceImpl {
   _rawAttributes;
   _asyncAttributesPending = false;
@@ -2636,22 +2636,22 @@ function mergeSchemaUrl(old, updating) {
   return void 0;
 }
 
-// node_modules/@opentelemetry/sdk-trace-base/build/esm/config.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace-base/build/esm/config.js
 init_esm();
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/TracerProvider.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/TracerProvider.js
 init_esm();
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/Tracer.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/Tracer.js
 init_esm();
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/Span.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/Span.js
 init_esm();
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/enums.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/enums.js
 var ExceptionEventName = "exception";
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/inspect.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/inspect.js
 var inspectCustom = /* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom");
 function settledResourceAttributes(resource) {
   const attrs = {};
@@ -2680,7 +2680,7 @@ function formatInspect(className, payload, depth, options, inspect2) {
   return `${className} ${inspect2(payload, childOptions)}`;
 }
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/Span.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/Span.js
 var SpanImpl = class {
   // Below properties are included to implement ReadableSpan for export
   // purposes but are not intended to be written-to directly.
@@ -3051,7 +3051,7 @@ var SpanImpl = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/Sampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/Sampler.js
 var SamplingDecision2;
 (function(SamplingDecision3) {
   SamplingDecision3[SamplingDecision3["NOT_RECORD"] = 0] = "NOT_RECORD";
@@ -3059,13 +3059,13 @@ var SamplingDecision2;
   SamplingDecision3[SamplingDecision3["RECORD_AND_SAMPLED"] = 2] = "RECORD_AND_SAMPLED";
 })(SamplingDecision2 || (SamplingDecision2 = {}));
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/semconv.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/semconv.js
 var ATTR_OTEL_SPAN_PARENT_ORIGIN = "otel.span.parent.origin";
 var ATTR_OTEL_SPAN_SAMPLING_RESULT = "otel.span.sampling_result";
 var METRIC_OTEL_SDK_SPAN_LIVE = "otel.sdk.span.live";
 var METRIC_OTEL_SDK_SPAN_STARTED = "otel.sdk.span.started";
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/TracerMetrics.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/TracerMetrics.js
 var TracerMetrics = class {
   startedSpans;
   liveSpans;
@@ -3118,10 +3118,10 @@ function samplingDecisionToString(decision) {
   }
 }
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/version.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/version.js
 var VERSION3 = "2.12.0";
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/Tracer.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/Tracer.js
 var Tracer = class {
   _sampler;
   _spanLimits;
@@ -3236,7 +3236,7 @@ var Tracer = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/MultiSpanProcessor.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/MultiSpanProcessor.js
 var MultiSpanProcessor = class {
   _spanProcessors;
   constructor(spanProcessors) {
@@ -3286,10 +3286,10 @@ var MultiSpanProcessor = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/sampler/ParentBasedSampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/sampler/ParentBasedSampler.js
 init_esm();
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/sampler/AlwaysOffSampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/sampler/AlwaysOffSampler.js
 var AlwaysOffSampler = class {
   shouldSample() {
     return {
@@ -3301,7 +3301,7 @@ var AlwaysOffSampler = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/sampler/AlwaysOnSampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/sampler/AlwaysOnSampler.js
 var AlwaysOnSampler = class {
   shouldSample() {
     return {
@@ -3313,7 +3313,7 @@ var AlwaysOnSampler = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/sampler/ParentBasedSampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/sampler/ParentBasedSampler.js
 var ParentBasedSampler = class {
   _root;
   _remoteParentSampled;
@@ -3352,7 +3352,7 @@ var ParentBasedSampler = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/platform/node/RandomIdGenerator.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/platform/node/RandomIdGenerator.js
 var SPAN_ID_BYTES = 8;
 var TRACE_ID_BYTES = 16;
 var RandomIdGenerator = class {
@@ -3384,7 +3384,7 @@ function getIdGenerator(bytes) {
   };
 }
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/TracerProvider.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/TracerProvider.js
 var ForceFlushState;
 (function(ForceFlushState2) {
   ForceFlushState2[ForceFlushState2["resolved"] = 0] = "resolved";
@@ -3479,7 +3479,7 @@ var TracerProvider = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace/build/esm/sampler/TraceIdRatioBasedSampler.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace/build/esm/sampler/TraceIdRatioBasedSampler.js
 init_esm();
 var TraceIdRatioBasedSampler = class {
   _ratio;
@@ -3516,7 +3516,7 @@ var TraceIdRatioBasedSampler = class {
   }
 };
 
-// node_modules/@opentelemetry/sdk-trace-base/build/esm/config.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace-base/build/esm/config.js
 var TracesSamplerValues;
 (function(TracesSamplerValues2) {
   TracesSamplerValues2["AlwaysOff"] = "always_off";
@@ -3586,7 +3586,7 @@ function getSamplerProbabilityFromEnv() {
   return probability;
 }
 
-// node_modules/@opentelemetry/sdk-trace-base/build/esm/utility.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace-base/build/esm/utility.js
 var DEFAULT_ATTRIBUTE_COUNT_LIMIT = 128;
 var DEFAULT_ATTRIBUTE_VALUE_LENGTH_LIMIT = Infinity;
 function reconfigureLimits(userConfig) {
@@ -3596,7 +3596,7 @@ function reconfigureLimits(userConfig) {
   return Object.assign({}, userConfig, { spanLimits });
 }
 
-// node_modules/@opentelemetry/sdk-trace-base/build/esm/BasicTracerProvider-shim.js
+// ../telmoni/sdk/typescript/node_modules/@opentelemetry/sdk-trace-base/build/esm/BasicTracerProvider-shim.js
 var BasicTracerProvider = class extends TracerProvider {
   constructor(config = {}) {
     const mergedConfig = merge({}, loadDefaultConfig(), reconfigureLimits(config));
@@ -3605,7 +3605,7 @@ var BasicTracerProvider = class extends TracerProvider {
   }
 };
 
-// node_modules/telmoni/dist/index.mjs
+// ../telmoni/sdk/typescript/dist/index.mjs
 init_esm();
 import { createHash as createHash2 } from "crypto";
 import { Agent as HttpAgent, ClientRequest } from "http";

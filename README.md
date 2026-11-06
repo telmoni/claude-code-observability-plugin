@@ -67,7 +67,7 @@ npm run validate   # the manifests as Claude Code validates them
 npm run format     # prettier, as the check wants it
 ```
 
-Until the SDK's next release, the plugin builds against the core's checkout beside this one: `npm run sdk-checkout` installs `../telmoni/sdk/typescript` over the registry's, and `npm ci` puts the registry's back.
+Until the SDK's next release, the plugin builds against the core's checkout beside this one: clone `telmoni/telmoni` next to this repository and run `npm ci && npm run build` in its `sdk/typescript` before `npm ci` here.
 
 A release is the version bumped in `.claude-plugin/plugin.json` and `package.json` (`npm version --no-git-tag-version X.Y.Z` keeps `package-lock.json` in step) in one commit on `main`; CI tags it and cuts the GitHub release once the owner approves. At `0.0.0` nothing is released.
 
