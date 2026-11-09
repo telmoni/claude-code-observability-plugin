@@ -1146,14 +1146,14 @@ test("the flush waits as long as the sdk's own attempts", async () => {
   expect(sdk.flushes.every((seconds) => seconds === Number.POSITIVE_INFINITY)).toBe(true);
 });
 
-// What the Python version of the plugin wrote, so a session it began goes on under this one.
-const PYTHON_RUN_IDS: Array<[string, string, string]> = [
+// Run ids and the destination's digest must never change between versions.
+const PINNED_RUN_IDS: Array<[string, string, string]> = [
   ['session-one', 'uuid-1', '35ca5dbf-f0e5-53db-b6db-9c23c9a1e522'],
   ['s1', 'offset:0', '97d3ffce-5982-5f97-8153-7461d304420d'],
   ['abc', 'é-ünïcode-𝄞', '3e57f0d0-7520-55b7-887b-0ce94b3def4e'],
 ];
 
-test.each(PYTHON_RUN_IDS)(
+test.each(PINNED_RUN_IDS)(
   "the run id of %s's prompt %s is the one it always was",
   (session, prompt, id) => {
     expect(runId(session, prompt)).toBe(id);
@@ -1169,7 +1169,7 @@ test("a key's destination is the digest it always was", () => {
   );
 });
 
-test('a session whose state the python plugin wrote goes on, its kept run sent once', async () => {
+test('a session kept by an older version goes on, its kept run sent once', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -1207,7 +1207,7 @@ test('a session whose state the python plugin wrote goes on, its kept run sent o
   };
   writeFileSync(join(hook.stateDir, 'session-one.json'), JSON.stringify(state));
   writeFileSync(join(hook.stateDir, 'session-one.pending'), '');
-  // Its lock as the Python version left it: an empty file it never removed.
+  // An empty stale lock must be taken over so the session goes on.
   writeFileSync(join(hook.stateDir, 'session-one.lock'), '');
   utimesSync(join(hook.stateDir, 'session-one.lock'), 1, 1);
   await hook.run(transcript);
