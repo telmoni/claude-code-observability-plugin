@@ -99,7 +99,7 @@ test('a turn is sent as a trace', async () => {
   expect(models).toHaveLength(2);
   expect(models[0]!.attrs['gen_ai.usage.input_tokens']).toBe(18);
   expect(models[0]!.attrs['gen_ai.usage.cache_read.input_tokens']).toBe(5);
-  expect(models[0]!.attrs['gen_ai.usage.cache_write.input_tokens']).toBe(3);
+  expect(models[0]!.attrs['gen_ai.usage.cache_creation.input_tokens']).toBe(3);
   const tools = hook.server.byAttr('gen_ai.tool.name', 'Bash');
   expect(tools).toHaveLength(1);
   expect(tools[0]!.attrs).not.toHaveProperty(['error.type']);
