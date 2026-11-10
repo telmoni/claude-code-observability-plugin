@@ -222,8 +222,11 @@ test('the bundles record a turn as claude code runs them', { timeout: 30_000 }, 
   const done = spawnSync('/bin/sh', ['-c', hookCommand()], { input: JSON.stringify(payload), env });
   expect(done.status).toBe(0);
   const log = join(data, 'hook.log');
+  const lock = join(data, 'session-one.lock');
+  // The worker saves its state after the line, and lets go of the lock after that.
   for (let waited = 0; waited < 25_000; waited += 100) {
-    if (existsSync(log) && readFileSync(log, 'utf8').includes('not delivered')) break;
+    const said = existsSync(log) && readFileSync(log, 'utf8').includes('not delivered');
+    if (said && !existsSync(lock)) break;
     await sleep(100);
   }
   expect(readFileSync(log, 'utf8')).toContain('not delivered');
@@ -231,6 +234,6 @@ test('the bundles record a turn as claude code runs them', { timeout: 30_000 }, 
     pending: unknown[];
   };
   expect(state.pending).toHaveLength(1);
-  expect(existsSync(join(data, 'session-one.lock'))).toBe(false);
+  expect(existsSync(lock)).toBe(false);
   assertMetadataOnly(filesIn(data));
 });
