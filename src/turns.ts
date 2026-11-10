@@ -1,6 +1,6 @@
 /**
  * A session's rows gathered into turns: a prompt, the replies, the tool calls and their results,
- * up to the next prompt. What a run is made of, and nothing said unless the developer turned
+ * up to the next prompt. What a trace is made of, and nothing said unless the developer turned
  * content on.
  */
 
@@ -243,7 +243,7 @@ export function assemble(rows: Row[], sessionId: string, end: number, content = 
   const tools = new Map<string, ToolCall>();
   for (const row of rows) {
     if (row.sessionId !== undefined && row.sessionId !== sessionId) continue;
-    // A `Stop` hook that blocked carries the turn on with no prompt: a run of its own.
+    // A `Stop` hook that blocked carries the turn on with no prompt: a trace of its own.
     const continued = t.stopBlocked(row);
     if (continued || t.isPrompt(row)) {
       if (current !== undefined) {

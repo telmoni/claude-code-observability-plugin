@@ -167,8 +167,8 @@ test('the manifests agree', () => {
   const hookBundle = readFileSync(join(ROOT, 'dist', 'hook.mjs'), 'utf8');
   const workerBundle = readFileSync(join(ROOT, 'dist', 'worker.mjs'), 'utf8');
   // The hook loads no SDK before it returns: the worker's bundle alone carries it.
-  expect(hookBundle).not.toContain('recordRun');
-  expect(workerBundle).toContain('recordRun');
+  expect(hookBundle).not.toContain('recordTrace');
+  expect(workerBundle).toContain('recordTrace');
   expect(hookBundle).not.toContain(KEY);
   expect(workerBundle).not.toContain(KEY);
 });
@@ -210,7 +210,7 @@ test('the bundles record a turn as claude code runs them', { timeout: 30_000 }, 
   transcript.reply();
   const data = join(tmp, 'data');
   const payload = { ...STOP, session_id: 'session-one', transcript_path: transcript.path };
-  // No Telmoni at this endpoint: the worker keeps the run for the next hook, and says so.
+  // No Telmoni at this endpoint: the worker keeps the trace for the next hook, and says so.
   const env = {
     PATH: process.env.PATH ?? '',
     HOME: tmp,

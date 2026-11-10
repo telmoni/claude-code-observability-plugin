@@ -10,7 +10,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { Log } from './log.js';
 import { type Payload, fromJson } from './payload.js';
 import * as records from './record.js';
-import type { PlainRun } from './record.js';
+import type { PlainTrace } from './record.js';
 import { type SendHooks, Sender, type Verdict } from './send.js';
 import { type Env, type Settings, destination, readSettings } from './settings.js';
 import { Lock, State, limits } from './state.js';
@@ -24,7 +24,7 @@ export const waits = {
   settleQuietMs: 500,
   settleLimitMs: 3_000,
   settlePollMs: 100,
-  // Each run sent is remembered at most this soon after the last: a catch-up may take hours.
+  // Each trace sent is remembered at most this soon after the last: a catch-up may take hours.
   saveEveryMs: 1_000,
   // A session's lock untouched this long is let go: a session hooks again within days, or not at all.
   sweepAfterMs: 7 * 24 * 3600 * 1000,
@@ -71,7 +71,7 @@ async function work(given: Payload, settings: Settings, log: Log, hooks: SendHoo
     try {
       state = State.load(statePath);
     } catch (fault) {
-      // Left as it is: read as new, it would send the session again and lose its kept runs.
+      // Left as it is: read as new, it would send the session again and lose its kept traces.
       log.line(session, event, `state not read (${nameOf(fault)}); nothing sent`);
       return;
     }
@@ -135,7 +135,7 @@ async function sweepLocks(settings: Settings, own: string): Promise<void> {
 }
 
 /**
- * Other sessions' kept runs, the longest waiting first, each where its own session's key sends
+ * Other sessions' kept traces, the longest waiting first, each where its own session's key sends
  * alone: their last hook may have met no Telmoni.
  */
 async function sendLeft(
@@ -206,7 +206,7 @@ function isFile(path: string): boolean {
   }
 }
 
-/** Saves the state as each run goes, at most once in `saveEveryMs`, and whenever asked. */
+/** Saves the state as each trace goes, at most once in `saveEveryMs`, and whenever asked. */
 class Saver {
   #last = performance.now();
 
@@ -242,14 +242,14 @@ async function deliver(
   let asked = state.tags;
   for (const turn of found) {
     asked = tagRules.asked(asked, turn.asked, note);
-    const runId = records.runId(session, turn.promptUuid);
-    if (state.sent.includes(runId)) {
+    const traceId = records.traceId(session, turn.promptUuid);
+    if (state.sent.includes(traceId)) {
       state.offset = turn.nextOffset;
       state.tags = asked;
       continue;
     }
     if (!turns.isComplete(turn, event, given.busy, subagents)) {
-      log.line(session, event, `held ${runId.slice(0, 8)}: its turn is not over yet`);
+      log.line(session, event, `held ${traceId.slice(0, 8)}: its turn is not over yet`);
       break;
     }
     if (turn.modelCalls.length === 0 && turn.toolCalls.length === 0) {
@@ -273,7 +273,7 @@ async function deliver(
       const verdict = await sender.send(made, state.warned);
       noteVerdict(log, session, event, made, verdict);
       if (verdict.outcome === 'undelivered') state.pending.push(made);
-      else state.markSent(runId);
+      else state.markSent(traceId);
     }
     state.offset = turn.nextOffset;
     state.tags = asked;
@@ -284,7 +284,7 @@ async function deliver(
     log.line(
       session,
       event,
-      `dropped ${dropped} runs Telmoni could not take, the newest ${limits.pending} kept`,
+      `dropped ${dropped} traces Telmoni could not take, the newest ${limits.pending} kept`,
     );
   }
 }
@@ -299,7 +299,7 @@ function noter(state: State, log: Log, session: string, event: string): tagRules
   };
 }
 
-/** The kept runs, in order, until one is still not delivered; whether none is left. */
+/** The kept traces, in order, until one is still not delivered; whether none is left. */
 async function sendPending(
   state: State,
   sender: Sender,
@@ -314,7 +314,7 @@ async function sendPending(
     noteVerdict(log, session, event, first, verdict);
     if (verdict.outcome === 'undelivered') return false;
     state.pending.shift();
-    if (typeof first.run_id === 'string') state.markSent(first.run_id);
+    if (typeof first.trace_id === 'string') state.markSent(first.trace_id);
     saver.soon();
   }
   return true;
@@ -332,15 +332,15 @@ function noteVerdict(
   log: Log,
   session: string,
   event: string,
-  made: PlainRun,
+  made: PlainTrace,
   verdict: Verdict,
 ): void {
-  const run = String(made.run_id).slice(0, 8);
+  const trace = String(made.trace_id).slice(0, 8);
   const lines: Record<Verdict['outcome'], string> = {
-    sent: `sent ${run}`,
-    partial: `taken in part ${run}: ${verdict.detail}`,
-    refused: `refused, not sent again ${run}: ${verdict.detail}`,
-    undelivered: `not delivered ${run}, sent again at the next hook: ${verdict.detail}`,
+    sent: `sent ${trace}`,
+    partial: `taken in part ${trace}: ${verdict.detail}`,
+    refused: `refused, not sent again ${trace}: ${verdict.detail}`,
+    undelivered: `not delivered ${trace}, sent again at the next hook: ${verdict.detail}`,
   };
   log.line(session, event, lines[verdict.outcome]);
 }

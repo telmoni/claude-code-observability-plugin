@@ -50,7 +50,7 @@ test('a refusal outranks a dropped field', () => {
   expect(judge(both, true).outcome).toBe('refused');
 });
 
-test('a batch not delivered keeps the run beside one refused', () => {
+test('a batch not delivered keeps the trace beside one refused', () => {
   const both: Heard[] = [
     [
       { kind: 'refused', status: 400, problemType: '/errors/telemetry/invalid-batch' },

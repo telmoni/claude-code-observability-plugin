@@ -1,4 +1,4 @@
-/** A turn as the run it is recorded as, in plain values that keep in a file. */
+/** A turn as the trace it is recorded as, in plain values that keep in a file. */
 
 import { createHash } from 'node:crypto';
 
@@ -18,12 +18,12 @@ export const AGENT = 'claude-code';
 const NAMESPACE_URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 export const NAMESPACE = uuid5(NAMESPACE_URL, 'https://telmoni.com/claude-observability-plugin');
 export const TAG_MAX = 256;
-// How deep the SDK nests steps, the run's own at 1: a record past it would be refused whole.
+// How deep the SDK nests steps, the agent's own at 1: a record past it would be refused whole.
 export const STEP_DEPTH_MAX = 16;
 
 // The state file's own shape, its keys as it has always written them.
-export interface PlainRun {
-  run_id: string;
+export interface PlainTrace {
+  trace_id: string;
   agent: string;
   start: string;
   end: string;
@@ -88,12 +88,14 @@ function uuid5(namespace: string, name: string): string {
     .subarray(0, 16);
   bytes[6] = (bytes[6]! & 0x0f) | 0x50;
   bytes[8] = (bytes[8]! & 0x3f) | 0x80;
-  const hex = bytes.toString('hex');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return bytes.toString('hex');
 }
 
-/** One id for a turn however often it is sent, from the session and the prompt. */
-export function runId(sessionId: string, promptUuid: string): string {
+/**
+ * One id for a turn however often it is sent, from the session and the prompt: a version 5
+ * UUID's bytes as the 32 hex digits a trace id is.
+ */
+export function traceId(sessionId: string, promptUuid: string): string {
   return uuid5(NAMESPACE, `${sessionId}:${promptUuid}`);
 }
 
@@ -110,13 +112,13 @@ export interface BuildOptions {
 
 type Expand = (tool: ToolCall, end: Date, depth: number) => PlainCall;
 
-export function build(turn: Turn, options: BuildOptions): PlainRun {
+export function build(turn: Turn, options: BuildOptions): PlainTrace {
   const { sessionId, event, payloadError, subagents = new Map(), read = () => [] } = options;
   const { provider = 'anthropic', tags = new Map(), note = () => {} } = options;
   const calls: PlainCall[] = turn.modelCalls.map((call) => model(call, provider));
   calls.push(...turn.compactions.map(compaction));
   const skills: string[] = [];
-  // A subagent is expanded once a run, so a meta naming a call of its own transcript ends.
+  // A subagent is expanded once a trace, so a meta naming a call of its own transcript ends.
   const expanded = new Set<string>();
 
   /** A call as the step of the subagent it started, as deep as the SDK nests steps. */
@@ -134,14 +136,14 @@ export function build(turn: Turn, options: BuildOptions): PlainRun {
     calls.push(expand(tool, turn.end, 1));
   }
   byStart(calls);
-  const made: PlainRun = {
-    run_id: runId(sessionId, turn.promptUuid),
+  const made: PlainTrace = {
+    trace_id: traceId(sessionId, turn.promptUuid),
     agent: AGENT,
     start: iso(turn.start),
     end: iso(turn.end),
     session_id: sessionId,
     release: turn.version ?? null,
-    tags: runTags(skills, tags, note),
+    tags: traceTags(skills, tags, note),
     error_type: errorType(turn, event, payloadError) ?? null,
     cancelled: turn.endedByInterruption,
     calls,
@@ -157,8 +159,8 @@ function message(role: string, parts: Part[]): Message[] {
   return [{ role, parts }];
 }
 
-/** The run's tags: the skills it ran, then the developer's, as many as ingest keeps. */
-function runTags(
+/** The trace's tags: the skills it ran, then the developer's, as many as ingest keeps. */
+function traceTags(
   skills: string[],
   given: Tags,
   note: (text: string) => void,

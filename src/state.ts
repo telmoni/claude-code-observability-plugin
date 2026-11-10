@@ -15,13 +15,13 @@ import {
 } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import type { PlainRun } from './record.js';
+import type { PlainTrace } from './record.js';
 import * as tagRules from './tags.js';
 import { isObject } from './transcript.js';
 
 export const limits = {
   sent: 500,
-  // Runs kept for a Telmoni that stays away: the newest, so the file stays small and current.
+  // Traces kept for a Telmoni that stays away: the newest, so the file stays small and current.
   pending: 200,
   // A lock not freshened for this long was left by a hook that died holding it.
   staleMs: 60_000,
@@ -35,16 +35,16 @@ export class State {
   offset = 0;
   sent: string[] = [];
   // Turns Telmoni could not take yet, in order, sent again before any new one.
-  pending: PlainRun[] = [];
+  pending: PlainTrace[] = [];
   warned: Record<string, boolean> = {};
-  // Where the session's key sends (`destination`): its kept runs go there alone.
+  // Where the session's key sends (`destination`): its kept traces go there alone.
   destination: string | undefined;
   // The tags asked for in the turns before `offset`, which every later turn carries.
   tags: tagRules.Tags = new Map();
 
   /**
    * The session's state, new where none was saved; one that cannot be read throws, since read as
-   * new it would send the whole session again and lose its kept runs.
+   * new it would send the whole session again and lose its kept traces.
    */
   static load(path: string): State {
     let text: string;
@@ -63,7 +63,7 @@ export class State {
     if (Array.isArray(sent)) {
       state.sent = sent.filter((item) => typeof item === 'string').slice(-limits.sent);
     }
-    if (Array.isArray(pending)) state.pending = pending.filter(isObject) as unknown as PlainRun[];
+    if (Array.isArray(pending)) state.pending = pending.filter(isObject) as unknown as PlainTrace[];
     if (isObject(warned)) {
       state.warned = Object.fromEntries(
         Object.entries(warned)
@@ -96,17 +96,17 @@ export class State {
       closeSync(fd);
     }
     renameSync(temporary, path);
-    // Beside a state still holding runs, so any session's hook finds what is left to send.
+    // Beside a state still holding traces, so any session's hook finds what is left to send.
     const marker = `${path.replace(/\.json$/, '')}.pending`;
     if (this.pending.length > 0) touch(marker);
     else rmSync(marker, { force: true });
   }
 
-  markSent(runId: string): void {
-    if (!this.sent.includes(runId)) this.sent.push(runId);
+  markSent(traceId: string): void {
+    if (!this.sent.includes(traceId)) this.sent.push(traceId);
   }
 
-  /** Lets the oldest pending runs go past the cap; how many went. */
+  /** Lets the oldest pending traces go past the cap; how many went. */
   trimPending(): number {
     const over = this.pending.length - limits.pending;
     if (over <= 0) return 0;

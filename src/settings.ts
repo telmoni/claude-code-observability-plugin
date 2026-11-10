@@ -125,7 +125,7 @@ export function readSettings(env: Env): Settings {
 }
 
 /**
- * Where this key sends, as a digest of the endpoint and the key: what a session's kept runs are
+ * Where this key sends, as a digest of the endpoint and the key: what a session's kept traces are
  * held to, so another session's hook sends them nowhere they were not meant to go.
  */
 export function destination(settings: Pick<Settings, 'apiKey' | 'endpoint'>): string {

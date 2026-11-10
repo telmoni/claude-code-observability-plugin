@@ -14,7 +14,7 @@ import {
   unpack,
 } from './helpers.js';
 
-function build(transcript: Transcript, { content = false } = {}): record.PlainRun[] {
+function build(transcript: Transcript, { content = false } = {}): record.PlainTrace[] {
   const read = t.readRows(transcript.path, 0);
   const found = turns.assemble(read.rows, transcript.sessionId, read.end, content);
   const subagents = t.discoverSubagents(transcript.path);
@@ -28,7 +28,7 @@ function build(transcript: Transcript, { content = false } = {}): record.PlainRu
   );
 }
 
-/** A run's or a step's calls, each read as the plain values the state file keeps. */
+/** A trace's or a step's calls, each read as the plain values the state file keeps. */
 function calls(of: object): Json[] {
   return (of as Json).calls as Json[];
 }
@@ -41,13 +41,14 @@ function said(role: string, ...parts: Json[]): Json[] {
   return [{ role, parts }];
 }
 
-test('a run id is the same each time and the sessions own', () => {
-  expect(record.runId('s', 'u')).toBe(record.runId('s', 'u'));
-  expect(record.runId('s', 'u')).not.toBe(record.runId('s2', 'u'));
-  expect(record.runId('s', 'u')).not.toBe(record.runId('s', 'u2'));
+test("a trace id is the same each time, the session's own, and 32 hex digits", () => {
+  expect(record.traceId('s', 'u')).toBe(record.traceId('s', 'u'));
+  expect(record.traceId('s', 'u')).not.toBe(record.traceId('s2', 'u'));
+  expect(record.traceId('s', 'u')).not.toBe(record.traceId('s', 'u2'));
+  expect(record.traceId('s', 'u')).toMatch(/^[0-9a-f]{32}$/);
 });
 
-test('a turn becomes a run with its calls in order', () => {
+test('a turn becomes a trace with its calls in order', () => {
   const { transcript } = setup();
   transcript.prompt();
   transcript.reply({
@@ -128,7 +129,7 @@ test('the skills tag is cut at a name', () => {
   ).toBe(true);
 });
 
-test('with content on a run holds the conversation as claude code recorded it', () => {
+test('with content on a trace holds the conversation as claude code recorded it', () => {
   const { transcript } = setup();
   transcript.conversation();
   const [made] = unpack(build(transcript, { content: true }), 1);
@@ -158,12 +159,21 @@ test('with content on a run holds the conversation as claude code recorded it', 
   expect(kept).not.toContain(transcript.path);
 });
 
-test('with content off a run holds what it always held', () => {
+test('with content off a trace holds what it always held', () => {
   const { transcript } = setup();
   transcript.conversation();
   const [made] = unpack(build(transcript), 1);
-  const run = ['run_id', 'agent', 'start', 'end', 'session_id', 'release', 'tags', 'error_type'];
-  expect(keys(made)).toEqual(new Set([...run, 'cancelled', 'calls']));
+  const trace = [
+    'trace_id',
+    'agent',
+    'start',
+    'end',
+    'session_id',
+    'release',
+    'tags',
+    'error_type',
+  ];
+  expect(keys(made)).toEqual(new Set([...trace, 'cancelled', 'calls']));
   const [first, bash, second, step, last] = unpack(calls(made), 5);
   const timed = ['kind', 'start', 'end', 'error_type', 'cancelled'];
   for (const model of [first, second, last]) {

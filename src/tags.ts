@@ -1,5 +1,5 @@
 /**
- * The tags a developer sets on a session's runs: asked for through the plugin's `tag` skill, or
+ * The tags a developer sets on a session's traces: asked for through the plugin's `tag` skill, or
  * kept in a `.telmoni-tags.json` at or above the folder a turn started in, read for its tags alone.
  * The folder and the file's path are never kept, sent or logged.
  */

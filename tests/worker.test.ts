@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { QueueFullError, Telmoni } from 'telmoni';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { STEP_DEPTH_MAX, runId } from '../src/record.js';
+import { STEP_DEPTH_MAX, traceId } from '../src/record.js';
 import { Sender } from '../src/send.js';
 import { destination } from '../src/settings.js';
 import { Lock, limits } from '../src/state.js';
@@ -68,7 +68,7 @@ afterEach(() => {
 type State = {
   offset: number;
   sent: string[];
-  pending: Array<Json & { run_id: string; calls: Json[] }>;
+  pending: Array<Json & { trace_id: string; calls: Json[] }>;
   tags: Json;
 };
 
@@ -76,25 +76,25 @@ function stateOf(hook: ReturnType<typeof setup>['hook'], session = 'session-one'
   return hook.state(session) as unknown as State;
 }
 
-function runIds(spans: Span[]): unknown[] {
-  return spans.map((run) => run.attrs['telmoni.run_id']);
+function traceIds(spans: Span[]): unknown[] {
+  return spans.map((span) => span.traceId);
 }
 
 function sizeOf(path: string): number {
   return statSync(path).size;
 }
 
-test('a turn is sent as a run', async () => {
+test('a turn is sent as a trace', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply({ toolUses: [['tu1', 'Bash', { command: 'cat /secret/path' }]] });
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_2' });
   expect(await hook.run(transcript)).toBe(0);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(runs[0]!.attrs['gen_ai.conversation.id']).toBe('session-one');
-  expect(runs[0]!.resource['service.version']).toBe('2.1.310');
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(agents[0]!.attrs['gen_ai.conversation.id']).toBe('session-one');
+  expect(agents[0]!.resource['service.version']).toBe('2.1.310');
   const models = hook.server.models();
   expect(models).toHaveLength(2);
   expect(models[0]!.attrs['gen_ai.usage.input_tokens']).toBe(18);
@@ -125,9 +125,9 @@ test('names a model wrote leave as plain names and a long one loses nothing', as
   transcript.result('tu3');
   transcript.reply({ messageId: 'msg_2', model: 'x'.repeat(300) });
   expect(await hook.run(transcript)).toBe(0);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(JSON.stringify(runs[0]!.attrs)).not.toContain('skills');
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(JSON.stringify(agents[0]!.attrs)).not.toContain('skills');
   const models = hook.server.models().map((span) => span.attrs['gen_ai.request.model']);
   expect(models).toContain('unknown');
   expect(models).toContain('x'.repeat(128));
@@ -149,7 +149,7 @@ test('the provider is the cloud claude code is set to', async () => {
   expect(providers).toEqual(['aws.bedrock', 'anthropic']);
 });
 
-test("a run kept without a provider goes as anthropic's", async () => {
+test("a trace kept without a provider goes as anthropic's", async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -179,10 +179,10 @@ function typed(words: string): string {
   );
 }
 
-function tagsOf(run: Span): Json {
+function tagsOf(agent: Span): Json {
   const prefix = 'telmoni.tag.';
   return Object.fromEntries(
-    Object.entries(run.attrs)
+    Object.entries(agent.attrs)
       .filter(([key]) => key.startsWith(prefix))
       .map(([key, value]) => [key.slice(prefix.length), value]),
   );
@@ -206,7 +206,7 @@ test('a tag asked for mid session goes on that turn and every later one until cl
   transcript.prompt();
   transcript.reply({ messageId: 'msg_5' });
   await hook.run(transcript);
-  expect(hook.server.runs().map(tagsOf)).toEqual([
+  expect(hook.server.agents().map(tagsOf)).toEqual([
     {},
     { repo: 'telmoni', branch: 'main', skills: TAG_SKILL },
     { repo: 'telmoni', branch: 'main' },
@@ -233,7 +233,7 @@ test('the tags file above the folder a turn started in goes on it and no path le
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_4' });
   await hook.run(transcript);
-  expect(hook.server.runs().map(tagsOf)).toEqual([
+  expect(hook.server.agents().map(tagsOf)).toEqual([
     { repo: 'telmoni' },
     {},
     { repo: 'asked', skills: TAG_SKILL },
@@ -256,9 +256,9 @@ test('past 32 tags the rest are dropped with a line and the turn still sent', as
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  const sent = tagsOf(runs[0]!);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  const sent = tagsOf(agents[0]!);
   expect(Object.keys(sent)).toHaveLength(32);
   expect(sent.skills).toBe('pr-review');
   expect(sent).toHaveProperty('k30');
@@ -274,13 +274,13 @@ test('the next hook sends only what is new', async () => {
   transcript.prompt();
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(2);
-  expect(new Set(runIds(runs)).size).toBe(2);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(2);
+  expect(new Set(traceIds(agents)).size).toBe(2);
   expect(stateOf(hook).sent).toHaveLength(2);
 });
 
-test('the work a blocking stop hook carries on is a run of its own', async () => {
+test('the work a blocking stop hook carries on is a trace of its own', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -290,9 +290,9 @@ test('the work a blocking stop hook carries on is a run of its own', async () =>
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_3' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(2);
-  expect(runs[0]!.attrs['telmoni.run_id']).not.toBe(runs[1]!.attrs['telmoni.run_id']);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(2);
+  expect(agents[0]!.traceId).not.toBe(agents[1]!.traceId);
   expect(hook.server.byAttr('gen_ai.tool.name', 'Bash').length).toBeGreaterThan(0);
   expect(hook.server.models()).toHaveLength(3);
   expect(stateOf(hook).offset).toBe(sizeOf(transcript.path));
@@ -307,18 +307,18 @@ test('carried on work read under way waits for its own stop', async () => {
   transcript.stopBlocked();
   transcript.reply({ messageId: 'msg_2', toolUses: [['tu1', 'Bash', {}]] });
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_3' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(2);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(2);
   expect(hook.server.models()).toHaveLength(3);
   expect(hook.server.byAttr('gen_ai.tool.name', 'Bash')[0]!.attrs['error.type']).toBeUndefined();
-  expect(stateOf(hook).sent).toContain(runs[1]!.attrs['telmoni.run_id']);
+  expect(stateOf(hook).sent).toContain(agents[1]!.traceId);
 });
 
-test('an interrupted turn is a cancelled run', async () => {
+test('an interrupted turn is a cancelled trace', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply({ toolUses: [['tu1', 'Bash', {}]] });
@@ -327,7 +327,7 @@ test('an interrupted turn is a cancelled run', async () => {
   transcript.prompt();
   transcript.reply({ messageId: 'msg_3' });
   await hook.run(transcript);
-  const [stopped, fine] = hook.server.runs();
+  const [stopped, fine] = hook.server.agents();
   expect(stopped!.attrs['telmoni.cancelled']).toBe(true);
   expect(fine!.attrs).not.toHaveProperty(['telmoni.cancelled']);
   const tools = hook.server.byAttr('gen_ai.tool.name', 'Bash');
@@ -368,7 +368,7 @@ test("a quiet session's lock is swept, a recent one kept, and the hook's own let
   const own = join(hook.stateDir, 'session-one.lock');
   aged(own);
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(existsSync(old)).toBe(false);
   expect(existsSync(saved)).toBe(true);
   expect(existsSync(recent)).toBe(true);
@@ -390,7 +390,7 @@ test('a hook lets go of its own lock alone, never one taken after a sweep', asyn
   expect(existsSync(path)).toBe(false);
 });
 
-test('a denied tool followed by a reply is not a cancelled run', async () => {
+test('a denied tool followed by a reply is not a cancelled trace', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply({ toolUses: [['tu1', 'Bash', {}]] });
@@ -398,9 +398,9 @@ test('a denied tool followed by a reply is not a cancelled run', async () => {
   transcript.interrupt(true);
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(runs[0]!.attrs).not.toHaveProperty(['telmoni.cancelled']);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(agents[0]!.attrs).not.toHaveProperty(['telmoni.cancelled']);
 });
 
 test('a failed tool fails alone', async () => {
@@ -413,9 +413,9 @@ test('a failed tool fails alone', async () => {
   const tools = hook.server.byAttr('gen_ai.tool.name', 'Bash');
   expect(tools).toHaveLength(1);
   expect(tools[0]!.attrs['error.type']).toBe('ToolError');
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(runs[0]!.attrs).not.toHaveProperty(['error.type']);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(agents[0]!.attrs).not.toHaveProperty(['error.type']);
 });
 
 test('an api error ends the turn failed', async () => {
@@ -423,9 +423,9 @@ test('an api error ends the turn failed', async () => {
   transcript.prompt();
   transcript.reply({ apiError: 'rate_limit' });
   await hook.run(transcript, { event: 'StopFailure', error: 'rate_limit' });
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(runs[0]!.attrs['error.type']).toBe('rate_limit');
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(agents[0]!.attrs['error.type']).toBe('rate_limit');
   const models = hook.server.models();
   expect(models).toHaveLength(1);
   expect(models[0]!.attrs['error.type']).toBe('rate_limit');
@@ -436,9 +436,9 @@ test('a stop failure names the error the transcript lacks', async () => {
   transcript.prompt();
   transcript.reply();
   await hook.run(transcript, { event: 'StopFailure', error: 'overloaded' });
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  expect(runs[0]!.attrs['error.type']).toBe('overloaded');
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  expect(agents[0]!.attrs['error.type']).toBe('overloaded');
 });
 
 function launchBackground(transcript: Transcript, finished = true): void {
@@ -470,11 +470,11 @@ test('a background subagent holds the turn until its notice is answered', async 
   transcript.notice('tu1');
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
   const steps = hook.server.named('subagent Explore');
   expect(steps).toHaveLength(1);
-  expect(steps[0]!.parentSpanId).toBe(runs[0]!.spanId);
+  expect(steps[0]!.parentSpanId).toBe(agents[0]!.spanId);
   const inner = hook.server.spans().filter((span) => span.parentSpanId === steps[0]!.spanId);
   const kinds = inner.map((span) => ('gen_ai.request.model' in span.attrs ? 'model' : 'tool'));
   expect(kinds.sort()).toEqual(['model', 'model', 'tool']);
@@ -487,11 +487,11 @@ test('a report handed back before its notice sends the turn and none of the repo
   transcript.handback('abc');
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
   const steps = hook.server.named('subagent Explore');
   expect(steps).toHaveLength(1);
-  expect(steps[0]!.parentSpanId).toBe(runs[0]!.spanId);
+  expect(steps[0]!.parentSpanId).toBe(agents[0]!.spanId);
   assertMetadataOnly(...hook.server.bodies, hook.kept(), hook.log());
 });
 
@@ -508,7 +508,7 @@ test('a subagent still running holds the turn', async () => {
     JSON.stringify({ ...JSON.parse(readFileSync(meta, 'utf8')), finished: true }),
   );
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
 });
 
 test("the session's end sends what waits", async () => {
@@ -525,7 +525,7 @@ test('a busy session holds its open turn alone', async () => {
   await hook.run(transcript, { busy: true });
   expect(hook.server.exports).toEqual([]);
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
 });
 
 test('what telmoni could not take goes first next time', async () => {
@@ -538,13 +538,13 @@ test('what telmoni could not take goes first next time', async () => {
   expect(state.pending).toHaveLength(1);
   expect(state.sent).toEqual([]);
   expect(hook.log()).toContain('not delivered');
-  const firstId = state.pending[0]!.run_id;
+  const firstId = state.pending[0]!.trace_id;
   transcript.prompt();
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runIds(runs)[0]).toBe(firstId);
-  expect(runs).toHaveLength(2);
+  const agents = hook.server.agents();
+  expect(traceIds(agents)[0]).toBe(firstId);
+  expect(agents).toHaveLength(2);
   expect(stateOf(hook).pending).toEqual([]);
 });
 
@@ -564,7 +564,7 @@ class RuntimeError extends Error {
   override name = 'RuntimeError';
 }
 
-test('runs sent before a fault are remembered', async () => {
+test('traces sent before a fault are remembered', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -577,7 +577,7 @@ test('runs sent before a fault are remembered', async () => {
     record,
     warned,
   ) {
-    calls.push(record.run_id);
+    calls.push(record.trace_id);
     if (calls.length > 1) throw new RuntimeError('the worker died here');
     return send.call(this, record, warned);
   });
@@ -586,27 +586,27 @@ test('runs sent before a fault are remembered', async () => {
   expect(stateOf(hook).sent).toEqual(calls.slice(0, 1));
   failing.mockRestore();
   await hook.run(transcript);
-  expect(runIds(hook.server.runs())).toEqual(calls);
+  expect(traceIds(hook.server.agents())).toEqual(calls);
 });
 
-test('a kept run that will not build is dropped and the rest go', async () => {
+test('a kept trace that will not build is dropped and the rest go', async () => {
   const { hook, transcript } = setup();
   const path = join(hook.stateDir, 'session-one.json');
-  writeFileSync(path, JSON.stringify({ pending: [{ run_id: 'old-shape' }] }));
+  writeFileSync(path, JSON.stringify({ pending: [{ trace_id: 'old-shape' }] }));
   transcript.prompt();
   transcript.reply();
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(hook.log()).toContain('the record did not build: TypeError');
   const state = stateOf(hook);
   expect(state.pending).toEqual([]);
   expect(state.sent).toContain('old-shape');
 });
 
-test('a kept run whose time is no iso time, or a day no calendar has, will not build', async () => {
+test('a kept trace whose time is no iso time, or a day no calendar has, will not build', async () => {
   const { hook, transcript } = setup();
-  const kept = (runId: string, start: string) => ({
-    run_id: runId,
+  const kept = (id: string, start: string) => ({
+    trace_id: id,
     agent: 'claude-code',
     start,
     end: '2026-10-25T03:00:02+00:00',
@@ -618,7 +618,7 @@ test('a kept run whose time is no iso time, or a day no calendar has, will not b
   transcript.prompt();
   transcript.reply();
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(hook.log().split('the record did not build: RangeError').length - 1).toBe(2);
   expect(stateOf(hook).sent).toEqual(expect.arrayContaining(['guessed', 'no-day']));
 });
@@ -633,7 +633,7 @@ test("the state is the owner's alone", async () => {
   expect(readdirSync(hook.stateDir).filter((name) => name.endsWith('.tmp'))).toEqual([]);
 });
 
-test("a run left at a session's end goes with another session's hook", async () => {
+test("a trace left at a session's end goes with another session's hook", async () => {
   const { tmp, hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -641,20 +641,20 @@ test("a run left at a session's end goes with another session's hook", async () 
   await hook.run(transcript, { event: 'SessionEnd' });
   const marker = join(hook.stateDir, 'session-one.pending');
   expect(existsSync(marker)).toBe(true);
-  const left = stateOf(hook).pending[0]!.run_id;
+  const left = stateOf(hook).pending[0]!.trace_id;
   const other = new Transcript(join(tmp, 'projects', 'p', 'session-two.jsonl'), 'session-two');
   other.prompt();
   other.reply();
   await hook.run(other);
-  const runs = runIds(hook.server.runs());
-  expect(runs).toHaveLength(2);
-  expect(runs.at(-1)).toBe(left);
+  const ids = traceIds(hook.server.agents());
+  expect(ids).toHaveLength(2);
+  expect(ids.at(-1)).toBe(left);
   expect(stateOf(hook).pending).toEqual([]);
   expect(stateOf(hook).sent).toContain(left);
   expect(existsSync(marker)).toBe(false);
 });
 
-test("a left run goes only where its own session's key sends", async () => {
+test("a left trace goes only where its own session's key sends", async () => {
   const { tmp, hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -663,14 +663,14 @@ test("a left run goes only where its own session's key sends", async () => {
   const other = new Transcript(join(tmp, 'projects', 'p', 'session-two.jsonl'), 'session-two');
   other.prompt();
   other.reply();
-  // Another endpoint beside the same key: the left run is that session's own next hook's.
+  // Another endpoint beside the same key: the left trace is that session's own next hook's.
   await hook.run(other, { env: { CLAUDE_PLUGIN_OPTION_TELMONI_ENDPOINT: 'http://127.0.0.1:1' } });
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(stateOf(hook).pending).toHaveLength(1);
   expect(existsSync(join(hook.stateDir, 'session-one.pending'))).toBe(true);
 });
 
-test('a left run waits while telmoni is away', async () => {
+test('a left trace waits while telmoni is away', async () => {
   const { tmp, hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -681,7 +681,7 @@ test('a left run waits while telmoni is away', async () => {
   other.reply();
   hook.server.answers = [200, 503, 503, 503];
   await hook.run(other);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(stateOf(hook).pending).toHaveLength(1);
   expect(existsSync(join(hook.stateDir, 'session-one.pending'))).toBe(true);
 });
@@ -748,7 +748,7 @@ test('a live hook keeps the session and a dead one does not', async () => {
     await once(holder, 'exit');
   }
   await hook.run(transcript, { event: 'SessionEnd' });
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
 });
 
 test('history copied from another session is passed over', async () => {
@@ -758,7 +758,7 @@ test('history copied from another session is passed over', async () => {
   transcript.prompt();
   transcript.reply();
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   assertMetadataOnly(...hook.server.bodies, hook.kept());
 });
 
@@ -774,7 +774,7 @@ test('a replaced transcript is read from its start', async () => {
   transcript.prompt();
   transcript.reply({ messageId: 'msg_9' });
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(3);
+  expect(hook.server.agents()).toHaveLength(3);
 });
 
 test('an image alone is a prompt', async () => {
@@ -786,7 +786,7 @@ test('an image alone is a prompt', async () => {
   transcript.imagePrompt({ withOrigin: false, caption: true });
   transcript.reply({ messageId: 'msg_3' });
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(3);
+  expect(hook.server.agents()).toHaveLength(3);
   assertMetadataOnly(...hook.server.bodies, hook.kept());
 });
 
@@ -802,9 +802,9 @@ test('a tool the person refused is cancelled not failed', async () => {
   expect(tools).toHaveLength(1);
   expect(tools[0]!.attrs['telmoni.cancelled']).toBe(true);
   expect(tools[0]!.attrs).not.toHaveProperty(['error.type']);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(2);
-  expect(runs[0]!.attrs['telmoni.cancelled']).toBe(true);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(2);
+  expect(agents[0]!.attrs['telmoni.cancelled']).toBe(true);
   assertMetadataOnly(...hook.server.bodies, hook.kept());
 });
 
@@ -818,11 +818,11 @@ test('a notice answered in a later turn completes the earlier one', async () => 
   transcript.notice('tu1');
   transcript.reply({ messageId: 'msg_3' });
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(2);
+  expect(hook.server.agents()).toHaveLength(2);
   expect(hook.server.named('subagent Explore')).toHaveLength(1);
 });
 
-test('a run telmoni took in part is logged and not sent again', async () => {
+test('a trace telmoni took in part is logged and not sent again', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
@@ -835,7 +835,7 @@ test('a run telmoni took in part is logged and not sent again', async () => {
   expect(state.sent).toHaveLength(1);
 });
 
-test('pending runs are bounded to the newest', async () => {
+test('pending traces are bounded to the newest', async () => {
   const { hook, transcript } = setup();
   const pending = limits.pending;
   limits.pending = 3;
@@ -846,17 +846,17 @@ test('pending runs are bounded to the newest', async () => {
       const prompt = transcript.prompt();
       transcript.reply({ messageId: `msg_${i}` });
       await hook.run(transcript);
-      ids.push(runId('session-one', prompt.uuid as string));
+      ids.push(traceId('session-one', prompt.uuid as string));
     }
-    expect(stateOf(hook).pending.map((made) => made.run_id)).toEqual(ids.slice(-3));
+    expect(stateOf(hook).pending.map((made) => made.trace_id)).toEqual(ids.slice(-3));
     expect(hook.log()).toContain('dropped');
     hook.server.answers = [];
     const prompt = transcript.prompt();
     transcript.reply({ messageId: 'msg_9' });
     await hook.run(transcript);
-    expect(runIds(hook.server.runs())).toEqual([
+    expect(traceIds(hook.server.agents())).toEqual([
       ...ids.slice(-3),
-      runId('session-one', prompt.uuid as string),
+      traceId('session-one', prompt.uuid as string),
     ]);
     expect(stateOf(hook).pending).toEqual([]);
   } finally {
@@ -882,7 +882,7 @@ test('a compaction opens no turn of its own', async () => {
   transcript.prompt();
   transcript.reply({ messageId: 'msg_2' });
   await hook.run(transcript);
-  expect(hook.server.runs()).toHaveLength(2);
+  expect(hook.server.agents()).toHaveLength(2);
   expect(stateOf(hook).offset).toBe(sizeOf(transcript.path));
   assertMetadataOnly(...hook.server.bodies, hook.kept());
 });
@@ -904,13 +904,13 @@ test("a subagent's own subagent and a compaction go as steps and none of what wa
   assertMetadataOnly(hook.kept(), hook.log());
   hook.server.answers = [];
   await hook.run(transcript);
-  const runs = hook.server.runs();
+  const agents = hook.server.agents();
   const outer = hook.server.named('subagent Explore');
   const inner = hook.server.named('subagent Plan');
   const compaction = hook.server.named('compaction');
-  expect([runs.length, outer.length, inner.length, compaction.length]).toEqual([1, 1, 1, 1]);
-  expect(outer[0]!.parentSpanId).toBe(runs[0]!.spanId);
-  expect(compaction[0]!.parentSpanId).toBe(runs[0]!.spanId);
+  expect([agents.length, outer.length, inner.length, compaction.length]).toEqual([1, 1, 1, 1]);
+  expect(outer[0]!.parentSpanId).toBe(agents[0]!.spanId);
+  expect(compaction[0]!.parentSpanId).toBe(agents[0]!.spanId);
   expect(inner[0]!.parentSpanId).toBe(outer[0]!.spanId);
   expect(under(hook, inner[0]!).map((span) => 'gen_ai.request.model' in span.attrs)).toEqual([
     true,
@@ -926,7 +926,7 @@ test("subagents nested past the sdk's depth are sent and not refused", async () 
   transcript.result('tu1');
   transcript.reply({ messageId: 'msg_2' });
   expect(await hook.run(transcript)).toBe(0);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(hook.log()).not.toContain('refused');
   const steps = hook.server.spans().filter((span) => span.name.startsWith('subagent '));
   expect(steps).toHaveLength(STEP_DEPTH_MAX);
@@ -937,7 +937,7 @@ test("subagents nested past the sdk's depth are sent and not refused", async () 
 
 test('a run the sdk has no room for is refused and logged', async () => {
   const { hook, transcript } = setup();
-  vi.spyOn(Telmoni.prototype, 'recordRun').mockImplementation(() => {
+  vi.spyOn(Telmoni.prototype, 'recordTrace').mockImplementation(() => {
     throw new QueueFullError(1, 0);
   });
   transcript.prompt();
@@ -974,10 +974,10 @@ test('content on sends the conversation where the project keeps it', async () =>
   expect(await hook.run(transcript, { env: CONTENT_ON })).toBe(0);
   // A hook's client has heard no answer yet, so it asks the mode with an export of no spans.
   expect(hook.server.exports[0]).toEqual({ resourceSpans: [] });
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
   const digest = createHash('sha256').update(IMAGE_BYTES).digest('hex');
-  const prompt = parts(runs[0]!, 'gen_ai.input.messages');
+  const prompt = parts(agents[0]!, 'gen_ai.input.messages');
   expect(prompt).toContainEqual({ type: 'text', content: 'PROMPT-TEXT-NEVER-SENT' });
   expect(prompt).toContainEqual({
     type: 'file',
@@ -990,7 +990,7 @@ test('content on sends the conversation where the project keeps it', async () =>
   expect(upload.url).toBe(`${ENDPOINT}/v1/media/${digest}`);
   expect(upload.body.equals(IMAGE_BYTES)).toBe(true);
   expect(header(upload.headers, 'Authorization')).toBe(`Bearer ${KEY}`);
-  expect(parts(runs[0]!, 'gen_ai.output.messages')).toEqual([
+  expect(parts(agents[0]!, 'gen_ai.output.messages')).toEqual([
     { type: 'text', content: 'REPLY-TEXT-NEVER-SENT' },
   ]);
   const models = hook.server.byAttr('gen_ai.operation.name', 'chat');
@@ -1045,9 +1045,9 @@ test('content on gives each model call its input and a compaction its summary', 
   hook.server.contentMode = 'on';
   transcript.longTurn();
   expect(await hook.run(transcript, { env: CONTENT_ON })).toBe(0);
-  const runs = hook.server.runs();
-  expect(runs).toHaveLength(1);
-  const children = under(hook, runs[0]!);
+  const agents = hook.server.agents();
+  expect(agents).toHaveLength(1);
+  const children = under(hook, agents[0]!);
   expect(children).toHaveLength(6);
   const [first, , compaction, second, step, last] = children as [
     Span,
@@ -1061,7 +1061,7 @@ test('content on gives each model call its input and a compaction its summary', 
   const image = { type: 'file', modality: 'image', mime_type: 'image/png', file_id: fileId };
   const prompt = { type: 'text', content: 'PROMPT-TEXT-NEVER-SENT' };
   expect(parts(first, 'gen_ai.input.messages')).toEqual([image, prompt]);
-  // The image is in the run's input and the first call's, and put once.
+  // The image is in the trace's input and the first call's, and put once.
   expect(hook.server.uploads).toHaveLength(1);
   expect(given(second)).toEqual([{ role: 'tool', parts: [toolResponse('tu1')] }]);
   expect(given(last)).toEqual([{ role: 'tool', parts: [toolResponse('tu2')] }]);
@@ -1088,7 +1088,7 @@ test('content on where the project keeps none sends none of a long turn', async 
   hook.server.contentMode = 'off';
   transcript.longTurn();
   expect(await hook.run(transcript, { env: CONTENT_ON })).toBe(0);
-  expect(hook.server.runs()).toHaveLength(1);
+  expect(hook.server.agents()).toHaveLength(1);
   expect(hook.server.named('compaction')).toHaveLength(1);
   expect(hook.server.uploads).toEqual([]);
   assertMetadataOnly(...hook.server.bodies, hook.kept(), hook.log());
@@ -1147,16 +1147,17 @@ test("the flush waits as long as the sdk's own attempts", async () => {
 });
 
 // Run ids and the destination's digest must never change between versions.
-const PINNED_RUN_IDS: Array<[string, string, string]> = [
-  ['session-one', 'uuid-1', '35ca5dbf-f0e5-53db-b6db-9c23c9a1e522'],
-  ['s1', 'offset:0', '97d3ffce-5982-5f97-8153-7461d304420d'],
-  ['abc', 'é-ünïcode-𝄞', '3e57f0d0-7520-55b7-887b-0ce94b3def4e'],
+// The bytes a turn's id always had, spelled as a trace id: what ingest stored for it stands.
+const PINNED_TRACE_IDS: Array<[string, string, string]> = [
+  ['session-one', 'uuid-1', '35ca5dbff0e553dbb6db9c23c9a1e522'],
+  ['s1', 'offset:0', '97d3ffce59825f9781537461d304420d'],
+  ['abc', 'é-ünïcode-𝄞', '3e57f0d0752055b7887b0ce94b3def4e'],
 ];
 
-test.each(PINNED_RUN_IDS)(
-  "the run id of %s's prompt %s is the one it always was",
+test.each(PINNED_TRACE_IDS)(
+  "the trace id of %s's prompt %s is the one it always was",
   (session, prompt, id) => {
-    expect(runId(session, prompt)).toBe(id);
+    expect(traceId(session, prompt)).toBe(id);
   },
 );
 
@@ -1169,13 +1170,13 @@ test("a key's destination is the digest it always was", () => {
   );
 });
 
-test('a session kept by an older version goes on, its kept run sent once', async () => {
+test('a session kept by an older version goes on, its kept trace sent once', async () => {
   const { hook, transcript } = setup();
   transcript.prompt();
   transcript.reply();
   const at = (seconds: number) => `2026-10-25T03:00:0${seconds}+00:00`;
   const kept = {
-    run_id: runId('session-one', 'uuid-1'),
+    trace_id: traceId('session-one', 'uuid-1'),
     agent: 'claude-code',
     start: at(1),
     end: at(2),
@@ -1211,13 +1212,13 @@ test('a session kept by an older version goes on, its kept run sent once', async
   writeFileSync(join(hook.stateDir, 'session-one.lock'), '');
   utimesSync(join(hook.stateDir, 'session-one.lock'), 1, 1);
   await hook.run(transcript);
-  const runs = hook.server.runs();
-  expect(runIds(runs)).toEqual([kept.run_id]);
-  expect(tagsOf(runs[0]!)).toEqual({ repo: 'telmoni' });
+  const agents = hook.server.agents();
+  expect(traceIds(agents)).toEqual([kept.trace_id]);
+  expect(tagsOf(agents[0]!)).toEqual({ repo: 'telmoni' });
   expect(hook.server.models()[0]!.attrs['gen_ai.usage.input_tokens']).toBe(18);
   const after = stateOf(hook);
   expect(after.pending).toEqual([]);
-  expect(after.sent).toEqual([kept.run_id]);
+  expect(after.sent).toEqual([kept.trace_id]);
   expect(after.offset).toBe(sizeOf(transcript.path));
   expect(after.tags).toEqual({ repo: 'telmoni' });
 });

@@ -455,8 +455,8 @@ export class Server {
     return found;
   }
 
-  /** The run spans, in the order they were sent. */
-  runs(): Span[] {
+  /** The agents' own spans, one a trace, in the order they were sent. */
+  agents(): Span[] {
     return this.byAttr('gen_ai.operation.name', 'invoke_agent');
   }
 
