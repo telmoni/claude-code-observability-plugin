@@ -330,7 +330,7 @@ export function isComplete(
     if (tool.background && !(tool.notified && tool.replied)) return false;
     if (subagents.get(tool.toolUseId)?.finished === false) return false;
   }
-  // The hook that blocked can return inside the worker's wait, so the run it began is read under
+  // The hook that blocked can return inside the worker's wait, so the trace it began is read under
   // way at the very Stop it followed.
   const ended = turn.repliedLast || turn.endedByInterruption;
   if (event === 'Stop' && turn.open && turn.continued && !ended) return false;

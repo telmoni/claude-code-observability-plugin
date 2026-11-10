@@ -10,7 +10,7 @@
     {
       "name": "telmoni-observability",
       "source": "./",
-      "description": "Records each turn of your Claude Code sessions in Telmoni as a run: the models and their tokens, the tools, the subagents and the times, and the tags you set. The conversation itself, your prompts and images, the replies and their plain-text thinking, each tool's input and output, only once you turn on Capture content and the project keeps content. Telmoni is privacy-first, open-source monitoring for AI agents.",
+      "description": "Records each turn of your Claude Code sessions in Telmoni as a trace: the models and their tokens, the tools, the subagents and the times, and the tags you set. The conversation itself, your prompts and images, the replies and their plain-text thinking, each tool's input and output, only once you turn on Capture content and the project keeps content. Telmoni is privacy-first, open-source monitoring for AI agents.",
       "category": "monitoring"
     }
   ]

@@ -935,7 +935,7 @@ test("subagents nested past the sdk's depth are sent and not refused", async () 
   expect(steps.map((step) => step.spanId)).toContain(agents[0]!.parentSpanId);
 });
 
-test('a run the sdk has no room for is refused and logged', async () => {
+test('a trace the sdk has no room for is refused and logged', async () => {
   const { hook, transcript } = setup();
   vi.spyOn(Telmoni.prototype, 'recordTrace').mockImplementation(() => {
     throw new QueueFullError(1, 0);
@@ -1146,7 +1146,7 @@ test("the flush waits as long as the sdk's own attempts", async () => {
   expect(sdk.flushes.every((seconds) => seconds === Number.POSITIVE_INFINITY)).toBe(true);
 });
 
-// Run ids and the destination's digest must never change between versions.
+// Trace ids and the destination's digest must never change between versions.
 // The bytes a turn's id always had, spelled as a trace id: what ingest stored for it stands.
 const PINNED_TRACE_IDS: Array<[string, string, string]> = [
   ['session-one', 'uuid-1', '35ca5dbff0e553dbb6db9c23c9a1e522'],
