@@ -7937,7 +7937,6 @@ import { createHash as createHash3 } from "crypto";
 import { accessSync, chmodSync, constants as constants2, mkdirSync, statSync as statSync3 } from "fs";
 import { homedir as homedir2 } from "os";
 import { dirname as dirname2, isAbsolute as isAbsolute2, join as join4 } from "path";
-var DEFAULT_ENDPOINT2 = "https://api.telmoni.com";
 var CAPTURE_CONTENT = "TELMONI_CAPTURE_CONTENT";
 var SCRUB_SECRETS = "TELMONI_SCRUB_SECRETS";
 var SCRUB_PII = "TELMONI_SCRUB_PII";
@@ -8001,7 +8000,7 @@ function readSettings(env) {
   const endpoint = (env[`${prefix}TELMONI_ENDPOINT`] ?? "").trim();
   return {
     apiKey: key || void 0,
-    endpoint: endpoint || DEFAULT_ENDPOINT2,
+    endpoint: endpoint || void 0,
     stateDir: stateDir(env),
     provider: providerOf(env),
     captureContent: contentOn(env[`${prefix}${CAPTURE_CONTENT}`], own),
@@ -8010,7 +8009,7 @@ function readSettings(env) {
   };
 }
 function destination(settings) {
-  return createHash3("sha256").update(`${settings.endpoint}
+  return createHash3("sha256").update(`${settings.endpoint ?? ""}
 ${settings.apiKey ?? ""}`).digest("hex").slice(0, 16);
 }
 
@@ -8270,6 +8269,18 @@ async function work(given, settings, log, hooks) {
           session,
           event,
           "no key: set TELMONI_API_KEY as a plugin setting or in the environment"
+        );
+      }
+      return;
+    }
+    if (!settings.endpoint) {
+      if (!state.warned.noEndpoint) {
+        state.warned.noEndpoint = true;
+        state.save(statePath);
+        log.line(
+          session,
+          event,
+          "no endpoint: set TELMONI_ENDPOINT, beside the key, to your self-hosted Telmoni"
         );
       }
       return;

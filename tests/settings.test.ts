@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { afterEach, expect, test, vi } from 'vitest';
 
-import { DEFAULT_ENDPOINT, type Env, providerOf, readSettings, stateDir } from '../src/settings.js';
+import { type Env, providerOf, readSettings, stateDir } from '../src/settings.js';
 import { tempDir } from './helpers.js';
 
 afterEach(() => {
@@ -19,7 +19,7 @@ test('a key goes only with the endpoint named beside it', () => {
   let read = readSettings({ ...base, ...plugin, TELMONI_ENDPOINT: 'https://repo.example' });
   expect([read.apiKey, read.endpoint]).toEqual(['from-plugin', 'https://plugin.example']);
   read = readSettings({ ...base, ...plugin, TELMONI_API_KEY: 'from-env' });
-  expect([read.apiKey, read.endpoint]).toEqual(['from-env', DEFAULT_ENDPOINT]);
+  expect([read.apiKey, read.endpoint]).toEqual(['from-env', undefined]);
   const blank = {
     ...base,
     ...plugin,
@@ -45,7 +45,7 @@ test('without a data folder the state lives under the config folder', () => {
 test('settings read their defaults', () => {
   const read = readSettings({ CLAUDE_CONFIG_DIR: tempDir() });
   expect(read.apiKey).toBeUndefined();
-  expect(read.endpoint).toBe(DEFAULT_ENDPOINT);
+  expect(read.endpoint).toBeUndefined();
   expect(read.captureContent).toBe(false);
   expect([read.scrubSecrets, read.scrubPii]).toEqual([true, true]);
 });

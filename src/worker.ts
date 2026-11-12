@@ -87,6 +87,18 @@ async function work(given: Payload, settings: Settings, log: Log, hooks: SendHoo
       }
       return;
     }
+    if (!settings.endpoint) {
+      if (!state.warned.noEndpoint) {
+        state.warned.noEndpoint = true;
+        state.save(statePath);
+        log.line(
+          session,
+          event,
+          'no endpoint: set TELMONI_ENDPOINT, beside the key, to your self-hosted Telmoni',
+        );
+      }
+      return;
+    }
     const path = given.transcriptPath;
     if (!isFile(path)) {
       log.line(session, event, 'no transcript at the path given');

@@ -720,6 +720,17 @@ test('without a key nothing is sent and the log says so once', async () => {
   expect(hook.log().split('no key').length - 1).toBe(1);
 });
 
+test('without an endpoint nothing is sent and the log says so once', async () => {
+  const { hook, transcript } = setup();
+  transcript.prompt();
+  transcript.reply();
+  const nowhere = { CLAUDE_PLUGIN_OPTION_TELMONI_ENDPOINT: '' };
+  await hook.run(transcript, { env: nowhere });
+  await hook.run(transcript, { env: nowhere });
+  expect(hook.server.exports).toEqual([]);
+  expect(hook.log().split('no endpoint').length - 1).toBe(1);
+});
+
 // Holds a session's lock as a live hook does: the file made only where none is, naming its pid.
 const HOLD = `
 const { writeFileSync } = require('node:fs');

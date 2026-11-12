@@ -1,8 +1,8 @@
 # Telmoni for Claude Code
 
-Records each turn of your [Claude Code](https://code.claude.com) sessions in [Telmoni](https://telmoni.com) as a trace: the models it called and their tokens, the tools it used and the subagents it started, each with its times and whether it failed. Nothing you or Claude said, except the tags you set, unless you turn on **Capture content** and the project keeps content: then each turn's conversation too.
+Records each turn of your [Claude Code](https://code.claude.com) sessions in [Telmoni](https://github.com/telmoni/telmoni) as a trace: the models it called and their tokens, the tools it used and the subagents it started, each with its times and whether it failed. Nothing you or Claude said, except the tags you set, unless you turn on **Capture content** and the project keeps content: then each turn's conversation too.
 
-[Telmoni](https://github.com/telmoni/telmoni) is privacy-first, open-source monitoring for AI agents: with your sessions recorded, its [alerts](https://telmoni.com/docs/monitoring/alerts) tell you when a turn fails, loops on one tool or costs more than you set, and show you the turn that did it. Prompts stay in your process unless you turn content on.
+Telmoni is privacy-first, open-source monitoring for AI agents that you run on your own infrastructure ([self-hosting](https://github.com/telmoni/telmoni/blob/main/web/content/docs/self-host/overview.mdx)): with your sessions recorded, its [alerts](https://github.com/telmoni/telmoni/blob/main/web/content/docs/monitoring/alerts.mdx) tell you when a turn fails, loops on one tool or costs more than you set, and show you the turn that did it. Prompts stay in your process unless you turn content on.
 
 ## Install
 
@@ -19,20 +19,20 @@ This repository is the marketplace, and the plugin is the repository itself: an 
 
 ```sh
 git clone https://github.com/telmoni/claude-code-observability-plugin.git
-TELMONI_API_KEY=tm_… claude --plugin-dir ./claude-code-observability-plugin
+TELMONI_API_KEY=tm_… TELMONI_ENDPOINT=https://telmoni.example.com claude --plugin-dir ./claude-code-observability-plugin
 ```
 
 That one session runs the plugin as cloned; its bundles are built and committed in `dist/`, so there is nothing to build.
 
 ## Configure
 
-The plugin asks for a [project API key](https://telmoni.com/docs/api/api-keys) holding the **ingest** scope as it is installed. Set or change it in a session with `/plugin configure telmoni-observability@telmoni-plugins`, or from your shell:
+The plugin asks for a [project API key](https://github.com/telmoni/telmoni/blob/main/web/content/docs/api/api-keys.mdx) holding the **ingest** scope, and for the endpoint of your self-hosted Telmoni, as it is installed. Set or change it in a session with `/plugin configure telmoni-observability@telmoni-plugins`, or from your shell:
 
 ```sh
-echo '{"TELMONI_API_KEY": "tm_…"}' | claude plugin configure telmoni-observability@telmoni-plugins --values-stdin
+echo '{"TELMONI_API_KEY": "tm_…", "TELMONI_ENDPOINT": "https://telmoni.example.com"}' | claude plugin configure telmoni-observability@telmoni-plugins --values-stdin
 ```
 
-Claude Code keeps the key with its own credentials: in the Keychain on macOS, and in its credentials file elsewhere. The endpoint is `https://api.telmoni.com` unless you set one; a self-hosted Telmoni gives its machine host. A `TELMONI_API_KEY` in the environment Claude Code starts in — your shell's, or a repository's `.claude/settings.json` `env` block — comes before the plugin's own settings, so one checkout can report to another project, and goes with the `TELMONI_ENDPOINT` beside it there, or the default: a key is never sent to an endpoint named somewhere else, so a repository that names its own endpoint gets no one's machine-wide key.
+Claude Code keeps the key with its own credentials: in the Keychain on macOS, and in its credentials file elsewhere. There is no default endpoint: set it to your self-hosted Telmoni's machine host. Until one is set, the plugin sends nothing and its log says so once a session, as it does without a key. A `TELMONI_API_KEY` in the environment Claude Code starts in — your shell's, or a repository's `.claude/settings.json` `env` block — comes before the plugin's own settings, so one checkout can report to another project, and goes with the `TELMONI_ENDPOINT` beside it there, or nowhere: a key is never sent to an endpoint named somewhere else, so a repository that names its own endpoint gets no one's machine-wide key.
 
 **Capture content**, off unless you turn it on, sits beside the key: `/plugin configure` sets it, or `{"TELMONI_CAPTURE_CONTENT": true}` through `--values-stdin`. On, each turn carries its conversation too, as Claude Code recorded it: your prompt and its images, each reply with its thinking where Claude wrote it in plain text, what each model call was given (your prompt to the turn's first, a subagent's task to its first, and to each after the tool results since the call before), each tool's input and output, each subagent's task and answer, and each compaction's summary. Telmoni keeps it only in a project whose content mode is on, set in the project's settings; for any other, the SDK sends none of it. A key from the environment takes its switch from there too, `TELMONI_CAPTURE_CONTENT=1` beside it, never the plugin's own.
 
@@ -54,7 +54,7 @@ A key is 1 to 64 letters, digits, `_`, `.` or `-`, and a value up to 256 charact
 
 ## When nothing shows up
 
-The hook runs when a turn stops, when an API error ends one, and when the session ends, and hands the work to a process of its own, so no turn waits on Telmoni. Its log is `hook.log` in the plugin's data folder: `~/.claude/plugins/data/telmoni-observability-telmoni-plugins/` for an install from the marketplace, `~/.claude/plugins/data/telmoni-observability-inline/` under `--plugin-dir`, or `~/.claude/telmoni/` where Claude Code gives the plugin no data folder. One line names each failure by the start of the session's id: no key, an endpoint the SDK refused, a turn Telmoni could not take, which is kept, the newest 200 of them, and sent again as the next turn of any session ends, or one it refused for good, which is not; and a turn held because it is not over yet, a subagent it started in the background not yet answered or the session still busy. The hook itself never fails a turn, and never waits on Telmoni. Without Node 22 or later on your `PATH` the hook does nothing at all, and the log stays empty: `node --version` in the shell Claude Code starts in says which you have. The plugin records Claude Code's own sessions alone: where another editor runs Claude Code's hooks, it does nothing.
+The hook runs when a turn stops, when an API error ends one, and when the session ends, and hands the work to a process of its own, so no turn waits on Telmoni. Its log is `hook.log` in the plugin's data folder: `~/.claude/plugins/data/telmoni-observability-telmoni-plugins/` for an install from the marketplace, `~/.claude/plugins/data/telmoni-observability-inline/` under `--plugin-dir`, or `~/.claude/telmoni/` where Claude Code gives the plugin no data folder. One line names each failure by the start of the session's id: no key, no endpoint, an endpoint the SDK refused, a turn Telmoni could not take, which is kept, the newest 200 of them, and sent again as the next turn of any session ends, or one it refused for good, which is not; and a turn held because it is not over yet, a subagent it started in the background not yet answered or the session still busy. The hook itself never fails a turn, and never waits on Telmoni. Without Node 22 or later on your `PATH` the hook does nothing at all, and the log stays empty: `node --version` in the shell Claude Code starts in says which you have. The plugin records Claude Code's own sessions alone: where another editor runs Claude Code's hooks, it does nothing.
 
 ## Developing
 

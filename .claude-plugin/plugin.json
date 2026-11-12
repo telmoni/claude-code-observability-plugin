@@ -6,9 +6,9 @@
   "author": {
     "name": "Telmoni",
     "email": "hello@telmoni.com",
-    "url": "https://telmoni.com"
+    "url": "https://github.com/telmoni/telmoni"
   },
-  "homepage": "https://telmoni.com/docs/api/coding-agents",
+  "homepage": "https://github.com/telmoni/claude-code-observability-plugin",
   "repository": "https://github.com/telmoni/claude-code-observability-plugin",
   "license": "Apache-2.0",
   "keywords": ["observability", "monitoring", "telemetry", "tracing"],
@@ -22,7 +22,7 @@
     "TELMONI_ENDPOINT": {
       "type": "string",
       "title": "Telmoni endpoint",
-      "description": "Leave empty for https://api.telmoni.com. A self-hosted Telmoni gives its machine host.",
+      "description": "Your self-hosted Telmoni's machine host, such as https://telmoni.example.com. Required: until it is set, nothing is sent.",
       "default": ""
     },
     "TELMONI_CAPTURE_CONTENT": {

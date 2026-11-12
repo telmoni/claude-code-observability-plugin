@@ -7,7 +7,6 @@ import { dirname, isAbsolute, join } from 'node:path';
 
 export type Env = Readonly<Record<string, string | undefined>>;
 
-export const DEFAULT_ENDPOINT = 'https://api.telmoni.com';
 // The developer's switch for content: the SDKs' variable, and the plugin's own setting's name.
 export const CAPTURE_CONTENT = 'TELMONI_CAPTURE_CONTENT';
 // The scrubbers' switches, named as the content switch is.
@@ -26,7 +25,8 @@ const SERVED_BY = [
 
 export interface Settings {
   apiKey: string | undefined;
-  endpoint: string;
+  // None unless set: the plugin sends nowhere until it is told where.
+  endpoint: string | undefined;
   stateDir: string;
   provider: string;
   // The conversation handed to the SDK, which sends it only where the project keeps content.
@@ -115,7 +115,7 @@ export function readSettings(env: Env): Settings {
   const endpoint = (env[`${prefix}TELMONI_ENDPOINT`] ?? '').trim();
   return {
     apiKey: key || undefined,
-    endpoint: endpoint || DEFAULT_ENDPOINT,
+    endpoint: endpoint || undefined,
     stateDir: stateDir(env),
     provider: providerOf(env),
     captureContent: contentOn(env[`${prefix}${CAPTURE_CONTENT}`], own),
@@ -130,7 +130,7 @@ export function readSettings(env: Env): Settings {
  */
 export function destination(settings: Pick<Settings, 'apiKey' | 'endpoint'>): string {
   return createHash('sha256')
-    .update(`${settings.endpoint}\n${settings.apiKey ?? ''}`)
+    .update(`${settings.endpoint ?? ''}\n${settings.apiKey ?? ''}`)
     .digest('hex')
     .slice(0, 16);
 }
